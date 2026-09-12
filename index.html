@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b5d3b">
+<link rel="manifest" href="manifest.json">
+<title>Golf Skins</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f5f3;color:#17201b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.app{max-width:560px;margin:auto;min-height:100vh;padding:14px 14px 35px}
+.top{text-align:center}h1{margin:6px 0 0;font-size:29px}.sub{color:#68736d;margin:2px 0 14px}
+.card{background:#fff;border-radius:17px;padding:17px;margin:10px 0;box-shadow:0 2px 12px #00000012}
+h2{font-size:20px;margin:0 0 12px}
+label{display:block;font-weight:700;font-size:13px;color:#4f5b55;margin:7px 0 4px}
+input{width:100%;padding:12px;border:2px solid #d2d9d4;border-radius:10px;font-size:18px;background:#fff}
+button{border:0;border-radius:12px;padding:13px 15px;font-weight:800;font-size:16px;background:#0b5d3b;color:#fff;cursor:pointer}
+button.alt{background:#e9efeb;color:#174d36}.danger{background:#b33a32}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.playerlist{display:grid;gap:7px;margin-top:10px}
+.playerbtn{display:flex;justify-content:space-between;align-items:center;background:#e9efeb;color:#174d36;text-align:left}
+.playerbtn span:last-child{font-size:13px;color:#68736d}
+.hidden{display:none!important}
+.hole{text-align:center;color:#52605a;font-weight:700}.big{text-align:center;font-size:28px;font-weight:900;margin:5px 0}
+.player{text-align:center;font-size:24px;font-weight:900;margin:8px 0}
+.notice{text-align:center;color:#68736d;font-size:13px;margin:5px 0 12px}
+.scorebuttons{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.scorebuttons button{font-size:23px;padding:16px}.scorebuttons .custom{grid-column:1/-1;background:#e9efeb;color:#174d36;font-size:16px}
+.skinwin{font-size:24px;font-weight:900;text-align:center;margin:8px 0}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 5px;border-bottom:1px solid #e0e5e1;text-align:center;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:#fff}
+.money{font-weight:900}
+.resultrow{display:grid;grid-template-columns:1fr 65px 90px;gap:7px;padding:10px 0;border-bottom:1px solid #e0e5e1;align-items:center}
+.resultrow b:last-child{text-align:right}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.box{background:#f1f5f2;border-radius:12px;text-align:center;padding:12px}.box small{display:block;color:#68736d}.box strong{font-size:22px}
+.footer{text-align:center;color:#68736d;font-size:12px;margin-top:15px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top"><h1>GOLF SKINS</h1><div class="sub">Lowest unique score wins • No carryovers</div></div>
+
+<div id="setup" class="card">
+<h2>Setup</h2>
+<label>Total Pot</label>
+<input id="pot" type="number" min="0" step="0.01" inputmode="decimal" placeholder="100">
+<div class="notice">Use $ for dollars or pesos. The app simply uses the $ symbol.</div>
+<label>Players — up to 30</label>
+<div id="names"></div>
+<div class="row" style="margin-top:12px">
+<button onclick="startEntering()">Enter Scores</button>
+<button class="alt" onclick="addPlayer()">Add Player</button>
+</div>
+</div>
+
+<div id="entry" class="hidden">
+<div class="card">
+<div class="hole">HOLE <span id="holeNum">1</span> OF 18</div>
+<div class="player" id="entryName"></div>
+<div class="notice">Enter this player's scores from Hole 1 through Hole 18.</div>
+<div class="scorebuttons" id="scoreButtons"></div>
+<div class="row" style="margin-top:10px">
+<button class="alt" onclick="backHole()">← Back</button>
+<button class="alt" onclick="playerList()">Players</button>
+</div>
+</div>
+</div>
+
+<div id="playersPage" class="card hidden">
+<h2>Select Player</h2>
+<div class="notice">Choose a player to enter or edit all 18 scores.</div>
+<div id="playerButtons" class="playerlist"></div>
+<div class="row" style="margin-top:12px">
+<button onclick="showResults()">Calculate Skins</button>
+<button class="alt" onclick="goSetup()">Setup</button>
+</div>
+</div>
+
+<div id="resultsPage" class="card hidden">
+<h2>Skins Results</h2>
+<div class="summary">
+<div class="box"><small>Total Pot</small><strong id="resultPot">$0.00</strong></div>
+<div class="box"><small>Winning Skins</small><strong id="winningSkins">0</strong></div>
+</div>
+<div class="summary">
+<div class="box"><small>Value Per Skin</small><strong id="skinValue">$0.00</strong></div>
+<div class="box"><small>Unclaimed Holes</small><strong id="unclaimed">0</strong></div>
+</div>
+<div id="winnerList"></div>
+<h2 style="margin-top:18px">Hole-by-Hole</h2>
+<div id="holeResults"></div>
+<div class="row" style="margin-top:12px">
+<button onclick="playerList()">Edit Scores</button>
+<button class="alt" onclick="goSetup()">Setup</button>
+</div>
+</div>
+
+<div class="footer">Each hole is worth 1 skin. Ties for lowest score mean no skin.</div>
+</div>
+
+<script>
+let players=[];
+let scores=[];
+let currentPlayer=0,currentHole=0;
+let nextId=1;
+
+function loadNames(){
+ const saved=JSON.parse(localStorage.getItem("skinsPlayers")||"[]");
+ players=saved.map((x,i)=>({name:x.name||"",scores:Array.isArray(x.scores)?x.scores.slice(0,18):Array(18).fill(null),id:i+1}));
+ if(!players.length) players=[{name:"",scores:Array(18).fill(null),id:1}];
+ nextId=players.length+1;
+ renderNames();
+}
+function renderNames(){
+ document.getElementById("names").innerHTML=players.map((p,i)=>
+ `<div class="row">
+ <input id="name${i}" value="${esc(p.name)}" placeholder="Player ${i+1} name">
+ <button class="danger" style="flex:0 0 48px;padding:8px" onclick="removePlayer(${i})">×</button>
+ </div>`).join("");
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function addPlayer(){
+ if(players.length>=30){alert("Maximum is 30 players.");return;}
+ players.push({name:"",scores:Array(18).fill(null),id:nextId++});renderNames();
+ setTimeout(()=>document.getElementById("name"+(players.length-1)).focus(),50);
+}
+function removePlayer(i){
+ if(players.length===1){alert("Keep at least one player.");return;}
+ players.splice(i,1);renderNames();
+}
+function savePlayerNames(){
+ players.forEach((p,i)=>p.name=document.getElementById("name"+i).value.trim());
+ players=players.filter(p=>p.name);
+ if(!players.length){alert("Enter at least one player name.");return false;}
+ localStorage.setItem("skinsPlayers",JSON.stringify(players));
+ return true;
+}
+function startEntering(){
+ if(!savePlayerNames())return;
+ currentPlayer=0;currentHole=0;
+ hideAll();document.getElementById("entry").classList.remove("hidden");renderEntry();
+}
+function renderEntry(){
+ document.getElementById("holeNum").textContent=currentHole+1;
+ document.getElementById("entryName").textContent=players[currentPlayer].name;
+ const b=document.getElementById("scoreButtons");b.innerHTML="";
+ for(let n=1;n<=8;n++){
+   const x=document.createElement("button");x.textContent=n;
+   x.onclick=()=>enterScore(n);b.appendChild(x);
+ }
+ const custom=document.createElement("button");custom.textContent="9 or more";custom.className="custom";
+ custom.onclick=customScore;b.appendChild(custom);
+}
+function enterScore(n){
+ players[currentPlayer].scores[currentHole]=n;
+ saveScores();
+ if(currentHole<17){currentHole++;renderEntry();}
+ else {playerList();}
+}
+function customScore(){
+ let n=parseInt(prompt("Enter score for Hole "+(currentHole+1)),10);
+ if(Number.isFinite(n)&&n>=1&&n<=20)enterScore(n);
+}
+function backHole(){
+ if(currentHole>0){currentHole--;renderEntry();}
+}
+function saveScores(){
+ localStorage.setItem("skinsPlayers",JSON.stringify(players));
+}
+function playerList(){
+ saveScores();hideAll();document.getElementById("playersPage").classList.remove("hidden");renderPlayerButtons();
+}
+function renderPlayerButtons(){
+ document.getElementById("playerButtons").innerHTML=players.map((p,i)=>{
+   let count=p.scores.filter(x=>x!=null).length;
+   return `<button class="playerbtn" onclick="editPlayer(${i})"><span>${esc(p.name)}</span><span>${count}/18 entered →</span></button>`;
+ }).join("");
+}
+function editPlayer(i){
+ currentPlayer=i;currentHole=0;
+ hideAll();document.getElementById("entry").classList.remove("hidden");renderEntry();
+}
+function goSetup(){hideAll();document.getElementById("setup").classList.remove("hidden");renderNames();}
+function hideAll(){["setup","entry","playersPage","resultsPage"].forEach(id=>document.getElementById(id).classList.add("hidden"));}
+
+function calculateSkins(){
+ const winners=players.map(p=>({name:p.name,skins:0,holes:[]}));
+ const holeOut=[];
+ let winning=0;
+ for(let h=0;h<18;h++){
+   const vals=players.map((p,i)=>({i,name:p.name,score:p.scores[h]})).filter(x=>x.score!=null);
+   if(vals.length===0){holeOut.push({hole:h+1,winner:null,score:null});continue;}
+   const min=Math.min(...vals.map(x=>x.score));
+   const low=vals.filter(x=>x.score===min);
+   if(low.length===1){
+     winners[low[0].i].skins++;
+     winners[low[0].i].holes.push(h+1);
+     winning++;
+     holeOut.push({hole:h+1,winner:low[0].name,score:min});
+   }else{
+     holeOut.push({hole:h+1,winner:"Tie — No Skin",score:min});
+   }
+ }
+ return {winners,holeOut,winning};
+}
+function showResults(){
+ saveScores();
+ const missing=players.filter(p=>p.scores.some(x=>x==null));
+ if(missing.length){
+   alert("Scores are incomplete for: "+missing.map(p=>p.name).join(", ")+". Please enter all 18 scores.");
+   return;
+ }
+ const r=calculateSkins();
+ const pot=Math.max(0,parseFloat(document.getElementById("pot").value)||0);
+ const value=r.winning?pot/r.winning:0;
+ document.getElementById("resultPot").textContent="$"+pot.toFixed(2);
+ document.getElementById("winningSkins").textContent=r.winning;
+ document.getElementById("skinValue").textContent="$"+value.toFixed(2);
+ document.getElementById("unclaimed").textContent=18-r.winning;
+ const sorted=r.winners.filter(x=>x.skins>0).sort((a,b)=>b.skins-a.skins||a.name.localeCompare(b.name));
+ document.getElementById("winnerList").innerHTML=sorted.length?sorted.map(x=>
+   `<div class="resultrow"><b>${esc(x.name)}</b><span>${x.skins}</span><b class="money">$${(x.skins*value).toFixed(2)}</b></div>`
+ ).join(""):"<div class='notice'>No skins were won.</div>";
+ document.getElementById("holeResults").innerHTML=r.holeOut.map(x=>
+   `<div class="resultrow"><b>Hole ${x.hole}</b><span>${x.score==null?"—":x.score}</span><b>${x.winner?esc(x.winner):"No scores"}</b></div>`
+ ).join("");
+ hideAll();document.getElementById("resultsPage").classList.remove("hidden");
+}
+loadNames();
+</script>
+</body>
+</html>
